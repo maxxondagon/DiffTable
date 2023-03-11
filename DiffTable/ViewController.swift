@@ -36,10 +36,11 @@ class ViewController: UIViewController {
         dataSource?.defaultRowAnimation = .fade
     }
     
-    func updateData(with snapshot: inout NSDiffableDataSourceSnapshot<Section, MyCell>) {
-        snapshot.appendSections([.one])
-        snapshot.appendItems(cells)
-        dataSource?.apply(snapshot)
+    func updateData() {
+        var snapshotNew = NSDiffableDataSourceSnapshot<Section, MyCell>()
+        snapshotNew.appendSections([.one])
+        snapshotNew.appendItems(cells)
+        dataSource?.apply(snapshotNew)
     }
     
     // MARK: - Table View
@@ -62,8 +63,7 @@ class ViewController: UIViewController {
         setupHierarchy()
         setupLayout()
         createDataSource()
-        var fistSnapshot = NSDiffableDataSourceSnapshot<Section, MyCell>()
-        updateData(with:&fistSnapshot )
+        updateData()
     }
     
     // MARK: - Setup
@@ -95,8 +95,7 @@ class ViewController: UIViewController {
     
     @objc func pressShuffle() {
         cells.shuffle()
-        var snapshot = NSDiffableDataSourceSnapshot<Section, MyCell>()
-        updateData(with: &snapshot)
+        updateData()
     }
 }
 
@@ -105,8 +104,7 @@ class ViewController: UIViewController {
 extension ViewController: UITableViewDelegate {
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
         tableView.deselectRow(at: indexPath, animated: true)
-        var snapshot = NSDiffableDataSourceSnapshot<Section, MyCell>()
-        
+
         if cells[indexPath.row].isSelect {
             cells[indexPath.row].isSelect.toggle()
         } else {
@@ -114,6 +112,6 @@ extension ViewController: UITableViewDelegate {
             let removedCell = cells.remove(at: indexPath.row)
             cells.insert(removedCell, at: 0)
         }
-        updateData(with: &snapshot)
+        updateData()
     }
 }
