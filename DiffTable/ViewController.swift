@@ -22,32 +22,34 @@ class ViewController: UIViewController {
     
     lazy var cells: [MyCell] = (0...30).map { MyCell(title: $0, isSelect: false) }
     
+    
     // MARK: - Data Source
     
-    var dataSource: UITableViewDiffableDataSource<Section, MyCell>?
+    var dataSource: UITableViewDiffableDataSource<Section, MyCell>!
     
     func createDataSource() {
-        dataSource = UITableViewDiffableDataSource(tableView: tableView, cellProvider: { tableView, indexPath, data in
+        dataSource = UITableViewDiffableDataSource(tableView: tableView) { tableView, indexPath, data in
             let cell = tableView.dequeueReusableCell(withIdentifier: "cell") ?? UITableViewCell()
             cell.textLabel?.text = "\(data.title)"
             cell.accessoryType = data.isSelect ? .checkmark : .none
             return cell
-        })
-        dataSource?.defaultRowAnimation = .fade
+        }
+        dataSource.defaultRowAnimation = .fade
     }
     
     func updateData() {
-        var snapshotNew = NSDiffableDataSourceSnapshot<Section, MyCell>()
-        snapshotNew.appendSections([.one])
-        snapshotNew.appendItems(cells)
-        dataSource?.apply(snapshotNew)
+        var snapshot = NSDiffableDataSourceSnapshot<Section, MyCell>()
+        snapshot.appendSections([.one])
+        snapshot.appendItems(cells, toSection: .one)
+        dataSource.apply(snapshot, animatingDifferences: true)
     }
     
     // MARK: - Table View
     
-    lazy var tableView: UITableView = {
+    private lazy var tableView: UITableView = {
         let table = UITableView(frame: .zero, style: .plain)
         table.layer.cornerRadius = 10
+        table.bounces = false
         table.register(UITableViewCell.self, forCellReuseIdentifier: "cell")
         table.delegate = self
         return table
@@ -75,7 +77,13 @@ class ViewController: UIViewController {
     private func setupNavigation() {
         title = "task-4"
         navigationController?.navigationBar.barTintColor = .systemGray5
-        navigationItem.rightBarButtonItem = UIBarButtonItem(title: "shuffle", style: .plain, target: self, action: #selector(pressShuffle))
+        navigationController?.navigationBar.shadowImage = UIImage()
+        navigationItem.rightBarButtonItem = UIBarButtonItem(
+            title: "shuffle",
+            style: .plain,
+            target: self,
+            action: #selector(pressShuffle)
+        )
     }
     
     private func setupHierarchy() {
@@ -86,8 +94,8 @@ class ViewController: UIViewController {
         view.subviews.forEach { $0.translatesAutoresizingMaskIntoConstraints = false }
         
         NSLayoutConstraint.activate([
-            tableView.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor, constant: 25),
-            tableView.bottomAnchor.constraint(equalTo: view.bottomAnchor),
+            tableView.topAnchor.constraint(equalTo: view.layoutMarginsGuide.topAnchor, constant: 10),
+            tableView.bottomAnchor.constraint(equalTo: view.bottomAnchor, constant: 10),
             tableView.leadingAnchor.constraint(equalTo: view.layoutMarginsGuide.leadingAnchor),
             tableView.trailingAnchor.constraint(equalTo: view.layoutMarginsGuide.trailingAnchor),
         ])
@@ -104,7 +112,7 @@ class ViewController: UIViewController {
 extension ViewController: UITableViewDelegate {
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
         tableView.deselectRow(at: indexPath, animated: true)
-
+        
         if cells[indexPath.row].isSelect {
             cells[indexPath.row].isSelect.toggle()
         } else {
